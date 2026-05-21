@@ -1,58 +1,25 @@
-# mftbrew
+# mftbrew : micro four-thirds 
+[![GitHub Pages](https://github.com/Saket-Upadhyay/mftbrew/actions/workflows/astro.yml/badge.svg)](https://github.com/Saket-Upadhyay/mftbrew/actions/workflows/astro.yml)
 
-Minimal photo portfolio built with Astro.
+A minimal photo portfolio built with Astro.
 
-## Setup
+```yaml
+Camera: OLYMPUS E-M10 Mark III (primary)
+Phone: Apple iPhone 17 Pro (secondary)
+Lenses: 40-150mm F4.0-5.6R | 25mm F2.0
+Editing: Lightroom | GIMP
+```
 
-```bash
+## Setup & Scripts
+
+```shell
 npm install
-```
-
-## Development
-
-```bash
-npm run dev
-```
-
-## Build
-
-```bash
-npm run build
-```
-
-## Preview
-
-```bash
-npm run preview
-```
-
-## Checks
-
-```bash
-npm run check
-```
-
-## CI
-
-```bash
-npm run ci
-```
-
-## Git hooks
-
-```bash
-npm run prepare
-```
-
-Pre-commit runs:
-
-```bash
-npm run check
-```
-
-## Thumbnails
-
-```bash
-npm run thumbs
+npm run dev       # Start development server
+npm run build     # Build production app
+npm run preview   # Preview production build
+npm run check     # Run checks
+npm run ci        # Run CI tasks
+npm run prepare   # Install Git hooks
+npm run thumbs    # Generate thumbnails
 ```
 
