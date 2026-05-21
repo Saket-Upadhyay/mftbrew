@@ -1,18 +1,44 @@
 ---
 // Files in `public/` are served at the site root — reference them from '/images'
-import { readdirSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 
 // Read the public/images directory at build time and create root-relative URLs.
 // Use process.cwd() so this works during build (dist prerender) and dev.
 // Files in `public/` are served at '/' so reference them as '/images/<name>'.
 const imagesDir = path.join(process.cwd(), "public", "images");
 const thumbsDir = path.join(imagesDir, "thumbs");
+
+// sharp returns exif as a raw Buffer; scan it for the first ASCII date string.
+// EXIF stores dates as "YYYY:MM:DD HH:MM:SS" — DateTimeOriginal appears before DateTime in most cameras.
+function dateFromExifBuffer(buf: Buffer): number | null {
+    const str = buf.toString("latin1");
+    const m = str.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+    if (!m) return null;
+    const d = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}`);
+    return isNaN(d.getTime()) ? null : d.getTime();
+}
+
 let allFiles: string[];
 try {
-    allFiles = readdirSync(imagesDir);
+    const files = readdirSync(imagesDir).filter((f: string) => /\.(jpe?g|png|webp)$/i.test(f));
+    const withDates = await Promise.all(
+        files.map(async (name: string) => {
+            const filePath = path.join(imagesDir, name);
+            let date: number;
+            try {
+                const meta = await sharp(filePath).metadata();
+                date = (meta.exif ? dateFromExifBuffer(meta.exif) : null)
+                    ?? statSync(filePath).birthtime.getTime();
+            } catch {
+                date = statSync(filePath).birthtime.getTime();
+            }
+            return { name, date };
+        })
+    );
+    allFiles = withDates.sort((a, b) => b.date - a.date).map((e) => e.name);
 } catch (err) {
-    // If public/images doesn't exist, fall back to an empty array.
     allFiles = [];
 }
 
@@ -35,7 +61,6 @@ type ImageEntry = {
 };
 
 const images: ImageEntry[] = allFiles
-    .filter((f: string) => /\.(jpe?g|png|webp)$/i.test(f))
     .map((name: string) => {
         const thumbExists = thumbFiles.has(name);
         return {
@@ -53,7 +78,7 @@ const images: ImageEntry[] = allFiles
                 <img
                         src={img.thumb}
                         alt=""
-                        loading="lazy"
+                        loading={i === 0 ? "eager" : "lazy"}
                         data-index={i}
                         data-full={img.full}
                         tabindex="0"
