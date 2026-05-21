@@ -1,14 +1,14 @@
 ---
 // Files in `public/` are served at the site root — reference them from '/images'
-import {readdirSync} from 'fs';
-import path from 'path';
+import { readdirSync } from "node:fs";
+import path from "node:path";
 
 // Read the public/images directory at build time and create root-relative URLs.
 // Use process.cwd() so this works during build (dist prerender) and dev.
 // Files in `public/` are served at '/' so reference them as '/images/<name>'.
-const imagesDir = path.join(process.cwd(), 'public', 'images');
-const thumbsDir = path.join(imagesDir, 'thumbs');
-let allFiles = [];
+const imagesDir = path.join(process.cwd(), "public", "images");
+const thumbsDir = path.join(imagesDir, "thumbs");
+let allFiles: string[];
 try {
     allFiles = readdirSync(imagesDir);
 } catch (err) {
@@ -16,18 +16,25 @@ try {
     allFiles = [];
 }
 
-const thumbFiles = new Set(
+const thumbFiles = new Set<string>(
     (() => {
         try {
             return readdirSync(thumbsDir);
         } catch {
-            return [];
+            return [] as string[];
         }
     })()
 );
-const images = allFiles
-    .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
-    .map((name) => {
+
+type ImageEntry = {
+    name: string;
+    full: string;
+    thumb: string;
+};
+
+const images: ImageEntry[] = allFiles
+    .filter((f: string) => /\.(jpe?g|png|webp)$/i.test(f))
+    .map((name: string) => {
         const thumbExists = thumbFiles.has(name);
         return {
             name,
@@ -89,72 +96,79 @@ const images = allFiles
     </div>
 </div>
 
-<script type="module">
+<script type="module" is:inline>
+    /** @type {HTMLImageElement[]} */
     const images = Array.from(document.querySelectorAll('[data-index]'));
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const btnClose = document.getElementById('lightbox-close');
     const btnPrev = document.getElementById('lightbox-prev');
     const btnNext = document.getElementById('lightbox-next');
-    let currentIndex = 0;
 
-    function showLightbox(index) {
-        currentIndex = index;
-        const fullSrc = images[index].getAttribute('data-full') || images[index].getAttribute('src');
-        lightboxImg.src = fullSrc;
-        lightbox.style.display = 'flex';
-        // Trigger fade-in on next frame to ensure transition runs
-        requestAnimationFrame(() => {
-            lightbox.style.opacity = '1';
+    if (!lightbox || !lightboxImg || !btnClose || !btnPrev || !btnNext || images.length === 0) {
+        // No gallery or missing elements; skip lightbox wiring.
+    } else {
+        let currentIndex = 0;
+
+        function showLightbox(index) {
+            currentIndex = index;
+            const fullSrc = images[index].dataset.full || images[index].getAttribute('src');
+            if (!fullSrc) return;
+            lightboxImg.src = fullSrc;
+            lightbox.style.display = 'flex';
+            // Trigger fade-in on next frame to ensure transition runs
+            requestAnimationFrame(() => {
+                lightbox.style.opacity = '1';
+            });
+            lightbox.setAttribute('aria-hidden', 'false');
+            // Prevent background scroll while lightbox is open
+            document.body.style.overflow = 'hidden';
+            // trap focus on close button
+            btnClose.focus();
+        }
+
+        function closeLightbox() {
+            lightbox.style.opacity = '0';
+            lightbox.setAttribute('aria-hidden', 'true');
+            // Restore background scrolling
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                lightbox.style.display = 'none';
+                lightboxImg.src = '';
+            }, 180);
+        }
+
+        function showNext() {
+            currentIndex = (currentIndex + 1) % images.length;
+            lightboxImg.src = images[currentIndex].dataset.full || images[currentIndex].getAttribute('src') || '';
+        }
+
+        function showPrev() {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            lightboxImg.src = images[currentIndex].dataset.full || images[currentIndex].getAttribute('src') || '';
+        }
+
+        images.forEach((img, i) => {
+            img.addEventListener('click', () => showLightbox(i));
+            img.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') showLightbox(i);
+            });
         });
-        lightbox.setAttribute('aria-hidden', 'false');
-        // Prevent background scroll while lightbox is open
-        document.body.style.overflow = 'hidden';
-        // trap focus on close button
-        btnClose.focus();
-    }
 
-    function closeLightbox() {
-        lightbox.style.opacity = '0';
-        lightbox.setAttribute('aria-hidden', 'true');
-        // Restore background scrolling
-        document.body.style.overflow = '';
-        setTimeout(() => {
-            lightbox.style.display = 'none';
-            lightboxImg.src = '';
-        }, 180);
-    }
+        btnClose.addEventListener('click', closeLightbox);
+        btnNext.addEventListener('click', showNext);
+        btnPrev.addEventListener('click', showPrev);
 
-    function showNext() {
-        currentIndex = (currentIndex + 1) % images.length;
-        lightboxImg.src = images[currentIndex].getAttribute('data-full') || images[currentIndex].getAttribute('src');
-    }
-
-    function showPrev() {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        lightboxImg.src = images[currentIndex].getAttribute('data-full') || images[currentIndex].getAttribute('src');
-    }
-
-    images.forEach((img, i) => {
-        img.addEventListener('click', () => showLightbox(i));
-        img.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') showLightbox(i);
+        lightbox.addEventListener('click', (e) => {
+            // close when clicking backdrop (not the image)
+            if (e.target === lightbox) closeLightbox();
         });
-    });
 
-    btnClose.addEventListener('click', closeLightbox);
-    btnNext.addEventListener('click', showNext);
-    btnPrev.addEventListener('click', showPrev);
-
-    lightbox.addEventListener('click', (e) => {
-        // close when clicking backdrop (not the image)
-        if (e.target === lightbox) closeLightbox();
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (lightbox.style.display === 'none') return;
-        if (e.key === 'Escape') closeLightbox();
-        if (e.key === 'ArrowRight') showNext();
-        if (e.key === 'ArrowLeft') showPrev();
-    });
+        document.addEventListener('keydown', (e) => {
+            if (lightbox.style.display === 'none') return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') showNext();
+            if (e.key === 'ArrowLeft') showPrev();
+        });
+    }
 </script>

@@ -44,21 +44,27 @@ const { title = "Portfolio" } = Astro.props;
         const card = document.getElementById('info-card');
         const close = document.getElementById('info-close');
 
+        if (!bubble || !card || !close) return;
+
         function openCard(){
-          bubble.setAttribute('aria-expanded','true');
-          card.setAttribute('aria-hidden','false');
-          card.style.display = 'block';
-          requestAnimationFrame(()=> card.style.opacity = '1');
+          bubble?.setAttribute('aria-expanded','true');
+          card?.setAttribute('aria-hidden','false');
+          if (card) {
+            card.style.display = 'block';
+            requestAnimationFrame(()=> card.style.opacity = '1');
+          }
         }
 
         function closeCard(){
-          bubble.setAttribute('aria-expanded','false');
-          card.setAttribute('aria-hidden','true');
-          card.style.opacity = '0';
-          setTimeout(()=> card.style.display = 'none', 180);
+          bubble?.setAttribute('aria-expanded','false');
+          card?.setAttribute('aria-hidden','true');
+          if (card) {
+            card.style.opacity = '0';
+            setTimeout(()=> card.style.display = 'none', 180);
+          }
         }
 
-        bubble.addEventListener('click', (e)=>{
+        bubble.addEventListener('click', () => {
           const expanded = bubble.getAttribute('aria-expanded') === 'true';
           if(expanded) closeCard(); else openCard();
         });
@@ -67,7 +73,9 @@ const { title = "Portfolio" } = Astro.props;
 
         // close when clicking outside the card
         document.addEventListener('click', (e)=>{
-          if(!card.contains(e.target) && !bubble.contains(e.target)){
+          const target = e.target instanceof Node ? e.target : null;
+          if(!target) return;
+          if(!card.contains(target) && !bubble.contains(target)){
             if(bubble.getAttribute('aria-expanded') === 'true') closeCard();
           }
         });
