@@ -25,3 +25,9 @@ npm run prepare   # Install Git hooks
 npm run thumbs    # Generate thumbnails
 ```
 
+## License
+
+The source code for this project is licensed under the [GPL-3.0 License](LICENSE).
+
+All photographs and visual assets are [© Saket Upadhyay](LICENSE-ASSETS.md) and are not covered by the GPL license.  
+Reuse of images requires explicit permission.
