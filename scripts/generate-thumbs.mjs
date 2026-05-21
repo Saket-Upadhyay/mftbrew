@@ -7,7 +7,7 @@ const imagesDir = path.join(projectRoot, 'public', 'images');
 const thumbsDir = path.join(imagesDir, 'thumbs');
 
 const IMAGE_EXT = /\.(jpe?g|png|webp)$/i;
-const THUMB_SIZE = 320;
+const THUMB_SIZE = 480;
 
 function ensureDir(dir) {
   mkdirSync(dir, { recursive: true });
