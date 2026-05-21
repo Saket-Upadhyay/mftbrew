@@ -40,8 +40,8 @@ const images: ImageEntry[] = allFiles
         const thumbExists = thumbFiles.has(name);
         return {
             name,
-            full: `${base}images/${name}`,
-            thumb: thumbExists ? `${base}images/thumbs/${name}` : `${base}images/${name}`,
+            full: `${base}/images/${name}`,
+            thumb: thumbExists ? `${base}/images/thumbs/${name}` : `${base}/images/${name}`,
         };
     });
 ---
