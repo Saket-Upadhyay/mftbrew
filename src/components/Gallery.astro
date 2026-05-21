@@ -1,0 +1,121 @@
+---
+// Files in `public/` are served at the site root — reference them from '/images'
+import { readdirSync } from 'fs';
+import path from 'path';
+
+// Read the public/images directory at build time and create root-relative URLs.
+// Use process.cwd() so this works during build (dist prerender) and dev.
+// Files in `public/` are served at '/' so reference them as '/images/<name>'.
+const imagesDir = path.join(process.cwd(), 'public', 'images');
+const thumbsDir = path.join(imagesDir, 'thumbs');
+let allFiles = [];
+try {
+  allFiles = readdirSync(imagesDir);
+} catch (err) {
+  // If public/images doesn't exist, fall back to an empty array.
+  allFiles = [];
+}
+
+const thumbFiles = new Set(
+  (() => {
+    try {
+      return readdirSync(thumbsDir);
+    } catch {
+      return [];
+    }
+  })()
+);
+const images = allFiles
+  .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
+  .map((name) => {
+    const thumbExists = thumbFiles.has(name);
+    return {
+      name,
+      full: `/images/${name}`,
+      thumb: thumbExists ? `/images/thumbs/${name}` : `/images/${name}`,
+    };
+  });
+---
+
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;">
+    {
+        images.map((img, i) => (
+                <img
+                        src={img.thumb}
+                        alt=""
+                        loading="lazy"
+                        data-index={i}
+                        data-full={img.full}
+                        tabindex="0"
+                        style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:0.5rem;cursor:pointer;"
+                />
+        ))
+    }
+</div>
+
+<!-- Lightbox overlay for focused image view -->
+<div id="lightbox" class="fixed inset-0 bg-black/75 hidden items-center justify-center z-50" aria-hidden="true">
+    <button id="lightbox-close" class="absolute top-4 right-4 text-white p-2 text-2xl" aria-label="Close">×</button>
+    <button id="lightbox-prev" class="absolute left-4 text-white p-2 text-3xl" aria-label="Previous">‹</button>
+    <img id="lightbox-img" src="" alt="" class="max-w-[90%] max-h-[90%] rounded shadow-lg" />
+    <button id="lightbox-next" class="absolute right-4 text-white p-2 text-3xl" aria-label="Next">›</button>
+</div>
+
+<script type="module">
+const images = Array.from(document.querySelectorAll('[data-index]'));
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const btnClose = document.getElementById('lightbox-close');
+const btnPrev = document.getElementById('lightbox-prev');
+const btnNext = document.getElementById('lightbox-next');
+let currentIndex = 0;
+
+function showLightbox(index) {
+  currentIndex = index;
+  const fullSrc = images[index].getAttribute('data-full') || images[index].getAttribute('src');
+  lightboxImg.src = fullSrc;
+  lightbox.classList.remove('hidden');
+  lightbox.setAttribute('aria-hidden', 'false');
+  // trap focus on close button
+  btnClose.focus();
+}
+
+function closeLightbox() {
+  lightbox.classList.add('hidden');
+  lightbox.setAttribute('aria-hidden', 'true');
+  lightboxImg.src = '';
+}
+
+function showNext() {
+  currentIndex = (currentIndex + 1) % images.length;
+  lightboxImg.src = images[currentIndex].getAttribute('data-full') || images[currentIndex].getAttribute('src');
+}
+
+function showPrev() {
+  currentIndex = (currentIndex - 1 + images.length) % images.length;
+  lightboxImg.src = images[currentIndex].getAttribute('data-full') || images[currentIndex].getAttribute('src');
+}
+
+images.forEach((img, i) => {
+  img.addEventListener('click', () => showLightbox(i));
+  img.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') showLightbox(i);
+  });
+});
+
+btnClose.addEventListener('click', closeLightbox);
+btnNext.addEventListener('click', showNext);
+btnPrev.addEventListener('click', showPrev);
+
+lightbox.addEventListener('click', (e) => {
+  // close when clicking backdrop (not the image)
+  if (e.target === lightbox) closeLightbox();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (lightbox.classList.contains('hidden')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') showNext();
+  if (e.key === 'ArrowLeft') showPrev();
+});
+</script>
