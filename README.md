@@ -1,5 +1,7 @@
 # mftbrew : micro four-thirds 
 [![GitHub Pages](https://github.com/Saket-Upadhyay/mftbrew/actions/workflows/astro.yml/badge.svg)](https://github.com/Saket-Upadhyay/mftbrew/actions/workflows/astro.yml)
+![](public/mftbrew_banner.png)
+
 
 A minimal photo portfolio built with Astro.
 
