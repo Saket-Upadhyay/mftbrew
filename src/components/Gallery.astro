@@ -26,6 +26,8 @@ const thumbFiles = new Set<string>(
     })()
 );
 
+const base = import.meta.env.BASE_URL;
+
 type ImageEntry = {
     name: string;
     full: string;
@@ -38,8 +40,8 @@ const images: ImageEntry[] = allFiles
         const thumbExists = thumbFiles.has(name);
         return {
             name,
-            full: `/images/${name}`,
-            thumb: thumbExists ? `/images/thumbs/${name}` : `/images/${name}`,
+            full: `${base}images/${name}`,
+            thumb: thumbExists ? `${base}images/thumbs/${name}` : `${base}images/${name}`,
         };
     });
 ---
