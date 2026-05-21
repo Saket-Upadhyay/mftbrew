@@ -1,0 +1,90 @@
+---
+import "../styles/global.css";
+
+const { title = "Portfolio" } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+  </head>
+
+  <body class="min-h-screen bg-black text-white">
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <slot />
+    </main>
+
+    <!-- Info bubble (bottom-right) -->
+    <button id="info-bubble" aria-expanded="false" aria-controls="info-card"
+      title="About my gear"
+      style="position:fixed;right:20px;bottom:20px;width:48px;height:48px;border-radius:9999px;background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;z-index:1000;cursor:pointer;font-weight:700;font-size:20px"
+    >i</button>
+
+    <div id="info-card" role="dialog" aria-hidden="true" aria-labelledby="info-title"
+      style="position:fixed;right:20px;bottom:80px;max-width:320px;background:rgba(6,6,6,0.36);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;border:1px solid rgba(255,255,255,0.06);padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.6);z-index:1001;display:none;opacity:0;transition:opacity 180ms ease;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 id="info-title" style="margin:0;font-size:16px;font-weight:700">Gear & Notes</h3>
+        <button id="info-close" aria-label="Close info" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer">×</button>
+      </div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.35">
+        <!-- Placeholder gear list — edit this to reflect your actual kit -->
+        <p style="margin:0 0 8px 0"><strong>Camera:</strong> Full-frame mirrorless (primary)</p>
+        <p style="margin:0 0 8px 0"><strong>Lenses:</strong> 35mm f/1.8, 50mm f/1.4, 70-200mm</p>
+        <p style="margin:0 0 8px 0"><strong>Support:</strong> Travel tripod</p>
+        <p style="margin:0 0 0 0"><strong>Editing:</strong> Lightroom • Gimp</p>
+      </div>
+    </div>
+
+    <script>
+      (function(){
+        const bubble = document.getElementById('info-bubble');
+        const card = document.getElementById('info-card');
+        const close = document.getElementById('info-close');
+
+        if (!bubble || !card || !close) return;
+
+        function openCard(){
+          bubble?.setAttribute('aria-expanded','true');
+          card?.setAttribute('aria-hidden','false');
+          if (card) {
+            card.style.display = 'block';
+            requestAnimationFrame(()=> card.style.opacity = '1');
+          }
+        }
+
+        function closeCard(){
+          bubble?.setAttribute('aria-expanded','false');
+          card?.setAttribute('aria-hidden','true');
+          if (card) {
+            card.style.opacity = '0';
+            setTimeout(()=> card.style.display = 'none', 180);
+          }
+        }
+
+        bubble.addEventListener('click', () => {
+          const expanded = bubble.getAttribute('aria-expanded') === 'true';
+          if(expanded) closeCard(); else openCard();
+        });
+
+        close.addEventListener('click', closeCard);
+
+        // close when clicking outside the card
+        document.addEventListener('click', (e)=>{
+          const target = e.target instanceof Node ? e.target : null;
+          if(!target) return;
+          if(!card.contains(target) && !bubble.contains(target)){
+            if(bubble.getAttribute('aria-expanded') === 'true') closeCard();
+          }
+        });
+
+        // close on Escape
+        document.addEventListener('keydown', (e)=>{
+          if(e.key === 'Escape' && bubble.getAttribute('aria-expanded') === 'true') closeCard();
+        });
+      })();
+    </script>
+  </body>
+</html>
