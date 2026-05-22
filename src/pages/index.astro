@@ -1,20 +1,24 @@
 ---
 import Layout from "../components/Layout.astro";
 import Gallery from "../components/Gallery.astro";
+const base = import.meta.env.BASE_URL;
 ---
 
-<Layout title="Photography Portfolio">
+<Layout title="MFTBrew by Saket">
+    <header slot="header" class="fixed inset-x-0 top-0 z-50 w-full bg-linear-to-b from-black/90 via-black/60 to-transparent backdrop-blur-md"
+            style="position:fixed;bottom:0;left:0;right:0;">
+        <div class="w-full px-4 py-2 flex justify-center items-center">
+            <img class="block h-10 w-auto" src={`${base}/favicon.ico`} alt="Favicon" width="92" height="92"/>
+        </div>
+    </header>
     <section class="mb-12">
         <h1 class="text-5xl font-bold mb-4">
             MFT Brew
         </h1>
-
+    </section>
+    <section class="mb-12 pt-16">
         <p class="text-zinc-400">
-            Personal project of
-            <a href="https://saketupadhyay.com"
-               style="text-decoration: underline">
-                Saket Upadhyay
-            </a>
+            Personal project of <a href="https://saketupadhyay.com" style="text-decoration: underline"> Saket Upadhyay </a>
         </p>
         <br>
     </section>

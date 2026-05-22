@@ -1,7 +1,8 @@
 ---
 import "../styles/global.css";
 
-const {title = "Portfolio"} = Astro.props;
+const {title = ""} = Astro.props;
+const base = import.meta.env.BASE_URL;
 ---
 
 <!DOCTYPE html>
@@ -13,6 +14,7 @@ const {title = "Portfolio"} = Astro.props;
 </head>
 
 <body class="min-h-screen bg-black text-white">
+<slot name="header" />
 <main class="max-w-7xl mx-auto px-4 py-8">
     <slot/>
 </main>
@@ -41,25 +43,25 @@ const {title = "Portfolio"} = Astro.props;
 </div>
 
 <div id="notice-card" role="dialog" aria-hidden="true" aria-labelledby="notice-title"
-     style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));background:rgba(1,1,1,0.6);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:#fff;border:1px solid rgba(255,255,255,0.06);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,1);z-index:1002;display:none;opacity:0;transition:opacity 180ms ease;cursor:pointer;">
+     style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));background:rgba(1,1,1,0.6);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:#fff;border:1px solid rgba(255,255,255,0.06);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,1);z-index:1002;display:none;opacity:0;transition:opacity 180ms ease;cursor:pointer;flex-direction:column;align-items:center;text-align:center;">
 
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px">
-    <h3 id="notice-title" style="margin:0;font-size:16px;font-weight:700">
+  <div style="display:flex;justify-content:center;align-items:center;margin-bottom:8px;gap:12px">
+    <h3 id="notice-title" style="margin:0;font-size:16px;font-weight:700;text-align:center">
       Copyright Notice
     </h3>
 
-    <span aria-hidden="true" style="font-size:18px;line-height:1">
-            &copy;
-        </span>
   </div>
 
-  <div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.5">
+  <div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.5;text-align:center">
     &copy; Saket Upadhyay. All rights reserved.<br><br>
 
     Photographs and media assets may <strong>NOT</strong> be reused,
     redistributed, modified, sold, used for AI/ML training,
     or used commercially without explicit written permission.
   </div>
+    <div style="display:flex;justify-content:center;align-items:center;margin-top:12px">
+        <img src={`${base}favicon.ico`} alt="Favicon" width="92" height="92" />
+    </div>
 </div>
 
 <script>
@@ -112,9 +114,14 @@ const {title = "Portfolio"} = Astro.props;
 
         if (notice) {
             notice.style.display = 'block';
+            notice.style.display = 'flex';
             requestAnimationFrame(() => notice.style.opacity = '1');
 
+            let noticeOpen = true;
+
             const closeNotice = () => {
+                if (!noticeOpen) return;
+                noticeOpen = false;
                 notice.style.opacity = '0';
                 setTimeout(() => {
                     notice.style.display = 'none';
@@ -122,6 +129,7 @@ const {title = "Portfolio"} = Astro.props;
             };
 
             notice.addEventListener('click', closeNotice);
+            document.addEventListener('click', closeNotice, { once: true });
             notice.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') closeNotice();
             });
