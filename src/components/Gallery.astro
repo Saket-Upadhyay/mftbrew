@@ -3,6 +3,7 @@
 import { readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
+import { Image } from "astro:assets";
 
 // Read the public/images directory at build time and create root-relative URLs.
 // Use process.cwd() so this works during build (dist prerender) and dev.
@@ -75,7 +76,7 @@ const images: ImageEntry[] = allFiles
      style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:0 1%;box-sizing:border-box;">
     {
         images.map((img, i) => (
-                <img
+                <Image
                         src={img.thumb}
                         alt=""
                         loading={i === 0 ? "eager" : "lazy"}
@@ -83,6 +84,8 @@ const images: ImageEntry[] = allFiles
                         data-full={img.full}
                         tabindex="0"
                         style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:0.5rem;cursor:pointer;"
+                        width={220}
+                        height={220}
                 />
         ))
     }
