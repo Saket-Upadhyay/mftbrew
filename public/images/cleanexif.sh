@@ -15,7 +15,12 @@ TAGS=(
     "-iptc:Credit="
     "-xmp:gpsimgdirection="
     "-xmp:gpsdestbearing="
-
+    "-XMP-crs:all="
+    "-XMP-xmpMM:History="
+    "-XMP-xmpMM:Ingredients="
+    "-XMP-xmpMM:Pantry="
+    "-XMP:PreservedFileName="
+    "-XMP:Format="
 )
 
 find . -maxdepth 1 -type f \( \
